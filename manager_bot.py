@@ -1,5 +1,6 @@
 from mimesis import Person
 from random import randint, choice
+from threading import Timer
 
 
 def generate_names_workers(count):
@@ -125,30 +126,6 @@ def round_robin(workers, tasks):
     return workers
 
 
-# def redistributes_tasks(workers):
-#     """
-#     method B
-#     """
-#     count = 1
-#     temp_task = None
-#     for index, worker in enumerate(workers, 1):
-#         if workers[-index]['tasks']:
-#             temp_task = workers[-index]['tasks'].pop(0)
-#             count = index
-#             break
-#
-#     for worker in workers:
-#
-#         if worker == workers[len(workers) - count]:
-#             worker['tasks'].insert(0, temp_task)
-#             break
-#
-#         worker['tasks'].insert(1, temp_task)
-#         temp_task = worker['tasks'].pop(0)
-#
-#     return workers
-
-
 def redistributes_tasks(workers):
     count = 1
     for worker in workers:
@@ -160,3 +137,42 @@ def redistributes_tasks(workers):
             count += 1
 
     return workers
+
+
+class InfiniteTimer:
+    """A Timer class that does not stop, unless you want it to."""
+
+    def __init__(self, seconds, target):
+        self._should_continue = False
+        self.is_running = False
+        self.seconds = seconds
+        self.target = target
+        self.thread = None
+
+    def _handle_target(self):
+        self.is_running = True
+        stop_timer = self.target()
+        if stop_timer:
+            self.thread.cancel()
+            self._should_continue = False
+        self.is_running = False
+        self._start_timer()
+
+    def _start_timer(self):
+        if self._should_continue:  # Code could have been running when cancel was called.
+            self.thread = Timer(self.seconds, self._handle_target)
+            self.thread.start()
+
+    def start(self):
+        if not self._should_continue and not self.is_running:
+            self._should_continue = True
+            self._start_timer()
+        else:
+            print("Timer already started or running, please wait if you're restarting.")
+
+    def cancel(self):
+        if self.thread is not None:
+            self._should_continue = False  # Just in case thread is running and cancel fails.
+            self.thread.cancel()
+        else:
+            print("Timer never started or failed to initialize.")
