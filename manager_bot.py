@@ -127,14 +127,14 @@ def round_robin(workers, tasks):
 
 
 def redistributes_tasks(workers):
-    count = 1
-    for worker in workers:
+    for count, worker in enumerate(workers):
         if worker['tasks']:
-            if count > len(workers) - 1:
+            if count + 1 > len(workers) - 1:
                 workers[0]['tasks'].insert(0, worker['tasks'].pop(0))
                 break
-            workers[count]['tasks'].insert(1, worker['tasks'].pop(0))
-            count += 1
+            if len(workers[count]['tasks']) > 1:
+                workers[count + 1]['tasks'].insert(1, worker['tasks'].pop(0))
+            # count += 1
 
     return workers
 
@@ -176,3 +176,16 @@ class InfiniteTimer:
             self.thread.cancel()
         else:
             print("Timer never started or failed to initialize.")
+
+
+
+d = [
+    {'name': 'Андрей Лапин', 'productivity': 5, 'tasks': [{'name': 'конфиденциальный онлайновый продукт', 'complexity': 40}, {'name': 'совместимый цифровой проект', 'complexity': 40}, {'name': 'цифровой совместимый проект', 'complexity': 40}, {'name': 'автоматический облачный продукт', 'complexity': 40}]},
+    {'name': 'Илзе Щербакова', 'productivity': 6, 'tasks': [{'name': 'конфиденциальный серверный проект', 'complexity': 40}, {'name': 'облачный аппаратный продукт', 'complexity': 40}, {'name': 'облачный конфиденциальный комплекс', 'complexity': 40}, {'name': 'цифровой серверный продукт', 'complexity': 40}]},
+    {'name': 'Валентина Алёшкова', 'productivity': 5, 'tasks': [{'name': 'серверный автоматический продукт', 'complexity': 40}, {'name': 'онлайновый конфиденциальный продукт', 'complexity': 40}, {'name': 'онлайновый цифровой продукт', 'complexity': 40}]},
+    {'name': 'Белла Терехова', 'productivity': 7, 'tasks': [{'name': 'компьютерный автоматический комплекс', 'complexity': 40}, {'name': 'цифровой автоматический проект', 'complexity': 40}, {'name': 'онлайновый цифровой комплекс', 'complexity': 40}]},
+    {'name': 'Рустам Авсюков', 'productivity': 5, 'tasks': []},
+    {'name': 'Исидор Москвин', 'productivity': 5, 'tasks': [{'name': 'цифровой компьютерный проект', 'complexity': 40}, {'name': 'компьютерный облачный комплекс', 'complexity': 40}, {'name': 'автоматический серверный продукт', 'complexity': 40}]}
+]
+
+redistributes_tasks(d)
