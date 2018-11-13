@@ -133,7 +133,7 @@ class ManagerBot(tk.Frame):
 
     # settings_window
     def settings_view(self):
-        Settings(self)
+        SettingsWindow(self)
 
     def settings_data(self, data):
         self.SETTINGS = data
@@ -206,13 +206,11 @@ class ManagerBot(tk.Frame):
     def new(self):
         self.workers = m.generate_workers(
             (self.SETTINGS['workers_min'], self.SETTINGS['workers_max']),
-            self.SETTINGS['productivity_min'],
-            self.SETTINGS['productivity_max']
+            (self.SETTINGS['productivity_min'], self.SETTINGS['productivity_max'])
         )
         self.tasks = m.generate_tasks(
             (self.SETTINGS['tasks_min'], self.SETTINGS['tasks_max']),
-            self.SETTINGS['complexity_min'],
-            self.SETTINGS['complexity_max']
+            (self.SETTINGS['complexity_min'], self.SETTINGS['complexity_max'])
         )
         m.round_robin(self.workers, self.tasks)
         self.add_list_workers()
@@ -236,7 +234,7 @@ class ManagerBot(tk.Frame):
             return True
 
 
-class Settings(tk.Toplevel):
+class SettingsWindow(tk.Toplevel):
     def __init__(self, app):
         self.app = app
         super().__init__(root)

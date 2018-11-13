@@ -3,18 +3,12 @@ from random import randint, choice
 from threading import Timer
 
 
-def generate_names_workers(count):
-    """
-    Возвращает случайные имена исполнителей
-    """
+def generate_random_names_workers(count):
     person = Person('ru')
     return [person.full_name() for _ in range(count)]
 
 
-def generate_names_tasks(count):
-    """
-    Возвращает случайные имена задач
-    """
+def choice_random_adjective():
     adjective = [
         'цифровой',
         'онлайновый',
@@ -26,55 +20,62 @@ def generate_names_tasks(count):
         'аппаратный',
         'серверный'
     ]
+    return choice(adjective)
+
+
+def choice_random_noun():
     noun = [
         'продукт',
         'проект',
         'комплекс'
     ]
+    return choice(noun)
+
+
+def generate_unique_adjectives(count):
+    adjectives = []
+    while len(adjectives) < count:
+        adjective = choice_random_adjective()
+        if adjective not in adjectives:
+            adjectives.append(adjective)
+
+    return adjectives
+
+
+def generate_random_names_tasks(count):
     tasks = []
     while len(tasks) != count:
-
-        new_task = []
-        while len(new_task) < 2:
-            word = choice(adjective)
-            if word not in new_task:
-                new_task.append(word)
-
-        new_task = ' '.join(new_task) + ' ' + choice(noun)
-        if new_task not in tasks:
-            tasks.append(new_task)
-
+        adjectives = generate_unique_adjectives(2)
+        new_name_task = ' '.join(adjectives) + ' ' + choice_random_noun()
+        if new_name_task not in tasks:
+            tasks.append(new_name_task)
     return tasks
 
 
 def generate_complexity_tasks(count, mn, mx):
-    """
-    Возвращает случайные единицы сложности
-    """
     return [randint(mn, mx) for _ in range(count)]
 
 
 def generate_productivity_workers(count, mn, mx):
-    """
-    Возвращает случайные единицы продуктивности
-    """
     return [randint(mn, mx) for _ in range(count)]
 
 
 def create_task(name, complexity):
-    """
-    Возвращает задачу
-    """
     task = dict()
     task['name'] = name
     task['complexity'] = complexity
     return task
 
 
+def create_tasks(names, complexities):
+    tasks = []
+    for i in range(len(names)):
+        task = create_task(names[i], complexities[i])
+        tasks.append(task)
+    return tasks
+
+
 def create_worker(name, productivity):
-    """
-    Возвращает исполнителя
-    """
     worker = dict()
     worker['name'] = name
     worker['productivity'] = productivity
@@ -82,41 +83,41 @@ def create_worker(name, productivity):
     return worker
 
 
-def generate_tasks(count, mn, mx):
-    """
-    Возвращает список задач
-    """
-    count = randint(count[0], count[1])
-    names = generate_names_tasks(count)
-    complexity = generate_complexity_tasks(count, mn, mx)
-
-    tasks = []
-    for i in range(len(names)):
-        task = create_task(names[i], complexity[i])
-        tasks.append(task)
-    return tasks
-
-
-def generate_workers(count, mn, mx):
-    """
-    Возвращает список исполнителей
-    """
-    count = randint(count[0], count[1])
-    names = generate_names_workers(count)
-    productivity = generate_productivity_workers(count, mn, mx)
-
+def create_workers(names, performances):
     workers = []
     for i in range(len(names)):
-        worker = create_worker(names[i], productivity[i])
+        worker = create_worker(names[i], performances[i])
         workers.append(worker)
     return workers
 
 
+def generate_tasks(min_max_count_tasks, min_max_complexity):
+    min_count_tasks = min_max_count_tasks[0]
+    max_count_tasks = min_max_count_tasks[1]
+    min_complexity = min_max_complexity[0]
+    max_complexity = min_max_complexity[1]
+    count_tasks = randint(min_count_tasks, max_count_tasks)
+    names = generate_random_names_tasks(count_tasks)
+    complexities = generate_complexity_tasks(count_tasks, min_complexity,
+                                             max_complexity)
+
+    return create_tasks(names, complexities)
+
+
+def generate_workers(min_max_count_workers, min_max_performance):
+    min_count_workers = min_max_count_workers[0]
+    max_count_workers = min_max_count_workers[1]
+    min_performance = min_max_performance[0]
+    max_performance = min_max_performance[1]
+    count_workers = randint(min_count_workers, max_count_workers)
+    names = generate_random_names_workers(count_workers)
+    performances = generate_productivity_workers(count_workers, min_performance,
+                                                 max_performance)
+
+    return create_workers(names, performances)
+
+
 def round_robin(workers, tasks):
-    """
-    Распределяет задачи по исполнителям
-    :return: workers с задачами
-    """
     i = 0
     for task in tasks:
         if i > len(workers) - 1:
@@ -134,7 +135,6 @@ def redistributes_tasks(workers):
                 break
             if len(workers[count]['tasks']) > 1:
                 workers[count + 1]['tasks'].insert(1, worker['tasks'].pop(0))
-            # count += 1
 
     return workers
 
@@ -159,7 +159,7 @@ class InfiniteTimer:
         self._start_timer()
 
     def _start_timer(self):
-        if self._should_continue:  # Code could have been running when cancel was called.
+        if self._should_continue:
             self.thread = Timer(self.seconds, self._handle_target)
             self.thread.start()
 
@@ -172,20 +172,7 @@ class InfiniteTimer:
 
     def cancel(self):
         if self.thread is not None:
-            self._should_continue = False  # Just in case thread is running and cancel fails.
+            self._should_continue = False
             self.thread.cancel()
         else:
             print("Timer never started or failed to initialize.")
-
-
-
-d = [
-    {'name': 'Андрей Лапин', 'productivity': 5, 'tasks': [{'name': 'конфиденциальный онлайновый продукт', 'complexity': 40}, {'name': 'совместимый цифровой проект', 'complexity': 40}, {'name': 'цифровой совместимый проект', 'complexity': 40}, {'name': 'автоматический облачный продукт', 'complexity': 40}]},
-    {'name': 'Илзе Щербакова', 'productivity': 6, 'tasks': [{'name': 'конфиденциальный серверный проект', 'complexity': 40}, {'name': 'облачный аппаратный продукт', 'complexity': 40}, {'name': 'облачный конфиденциальный комплекс', 'complexity': 40}, {'name': 'цифровой серверный продукт', 'complexity': 40}]},
-    {'name': 'Валентина Алёшкова', 'productivity': 5, 'tasks': [{'name': 'серверный автоматический продукт', 'complexity': 40}, {'name': 'онлайновый конфиденциальный продукт', 'complexity': 40}, {'name': 'онлайновый цифровой продукт', 'complexity': 40}]},
-    {'name': 'Белла Терехова', 'productivity': 7, 'tasks': [{'name': 'компьютерный автоматический комплекс', 'complexity': 40}, {'name': 'цифровой автоматический проект', 'complexity': 40}, {'name': 'онлайновый цифровой комплекс', 'complexity': 40}]},
-    {'name': 'Рустам Авсюков', 'productivity': 5, 'tasks': []},
-    {'name': 'Исидор Москвин', 'productivity': 5, 'tasks': [{'name': 'цифровой компьютерный проект', 'complexity': 40}, {'name': 'компьютерный облачный комплекс', 'complexity': 40}, {'name': 'автоматический серверный продукт', 'complexity': 40}]}
-]
-
-redistributes_tasks(d)
