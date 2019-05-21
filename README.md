@@ -13,7 +13,7 @@
 
 
 ## Пример работы
-![Alt Text](http://ipic.su/img/img7/fs/long.1558441256.gif)
+![Alt Text](http://ipic.su/img/img7/fs/show.1558441364.gif)
 
 ## Требования
 
